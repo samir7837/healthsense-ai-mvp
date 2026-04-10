@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const App = () => {
@@ -6,6 +6,36 @@ const App = () => {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Track previous risk to trigger sound only on change
+  const prevRiskRef = useRef(null);
+
+  // Function to play alert sound
+  const playAlertSound = () => {
+    try {
+      // Create a simple beep using Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 880; // 880 Hz for alert
+      gainNode.gain.value = 0.3;
+      
+      oscillator.start();
+      gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.8);
+      oscillator.stop(audioContext.currentTime + 0.8);
+      
+      // Resume audio context if suspended (browser autoplay policy)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    } catch (err) {
+      console.log('Audio not supported or blocked:', err);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -26,6 +56,17 @@ const App = () => {
           setError(null);
           setLastUpdated(new Date());
           setIsLoading(false);
+          
+          // Check if risk changed to WARNING or HIGH RISK
+          const currentRisk = result?.risk;
+          const prevRisk = prevRiskRef.current;
+          
+          if (currentRisk && prevRisk !== currentRisk) {
+            if (currentRisk === 'WARNING' || currentRisk === 'HIGH RISK') {
+              playAlertSound();
+            }
+          }
+          prevRiskRef.current = currentRisk;
         }
       } catch (err) {
         if (err.name !== 'AbortError' && isMounted) {
@@ -93,6 +134,8 @@ const App = () => {
               <div className="risk-label">Risk Level</div>
               <div className={`risk-value ${risk ? getRiskClass(risk) : ''}`}>
                 {risk || '—'}
+                {risk === 'WARNING' && <span className="alert-icon">⚠️</span>}
+                {risk === 'HIGH RISK' && <span className="alert-icon">🚨</span>}
               </div>
             </div>
 
