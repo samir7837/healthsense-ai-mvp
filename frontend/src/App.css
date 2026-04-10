@@ -286,3 +286,13 @@ body {
     font-size: 1.5rem;
   }
 }
+.alert-icon {
+  margin-left: 12px;
+  font-size: 1.8rem;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
