@@ -12,7 +12,7 @@ def send_data():
         bpm = generate_bpm()
 
         payload = {
-            "bpm": bpm   # ✅ MUST match API contract
+            "bpm": bpm   
         }
 
         try:
@@ -30,4 +30,4 @@ def send_data():
         time.sleep(2)
 
 if __name__ == "__main__":
-    send_data()
+    send_data() 
