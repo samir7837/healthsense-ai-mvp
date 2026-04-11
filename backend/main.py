@@ -47,3 +47,6 @@ def receive_data(data: BPMData):
 @app.get("/status")
 def get_status():
     return latest_data
+
+
+
